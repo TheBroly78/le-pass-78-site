@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Le Pass 78 — Démo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#06060a; --ink2:#0a0a14; --txt:#e8eaf2; --mut:#9aa0b4;
+    --e1:#818cf8; --e2:#6366f1; --e3:#4f46e5; --blue:#3b82f6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:#020205;color:var(--txt);
+    font-family:'Inter',system-ui,sans-serif;
+    display:flex;align-items:center;justify-content:center;min-height:100vh;overflow:hidden;
+  }
+  /* Scène 16:9 */
+  .stage{
+    position:relative;width:min(96vw,1100px);aspect-ratio:16/9;
+    background:radial-gradient(120% 120% at 50% 0%,#12122a 0%,#08080f 55%,#040408 100%);
+    border-radius:22px;overflow:hidden;border:1px solid rgba(255,255,255,.08);
+    box-shadow:0 40px 120px rgba(79,70,229,.25);
+  }
+  .grid{position:absolute;inset:0;background-image:
+    linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
+    background-size:42px 42px;mask-image:radial-gradient(ellipse at center,#000 55%,transparent 85%);}
+  .halo{position:absolute;border-radius:50%;filter:blur(90px);opacity:.55}
+  .halo.a{width:420px;height:420px;background:#4f46e5;top:-140px;left:50%;transform:translateX(-50%)}
+  .halo.b{width:360px;height:360px;background:#7c3aed;right:-120px;bottom:-120px;opacity:.4}
+  .halo.c{width:340px;height:340px;background:#2563eb;left:-120px;bottom:-100px;opacity:.4}
+
+  .scene{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:6%;opacity:0;pointer-events:none;transition:opacity .5s ease}
+  .scene.active{opacity:1}
+  .scene .in{opacity:0;transform:translateY(22px)}
+  .scene.active .in{animation:rise .7s cubic-bezier(.22,1,.36,1) forwards}
+  .scene.active .d1{animation-delay:.1s}.scene.active .d2{animation-delay:.28s}
+  .scene.active .d3{animation-delay:.46s}.scene.active .d4{animation-delay:.64s}
+  @keyframes rise{to{opacity:1;transform:none}}
+
+  .kicker{display:inline-flex;align-items:center;gap:8px;padding:7px 15px;border-radius:999px;
+    border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#c7cbff;
+    font-size:clamp(11px,1.3vw,14px);font-weight:600;letter-spacing:.04em;margin-bottom:18px}
+  .dot{width:8px;height:8px;border-radius:50%;background:#818cf8;box-shadow:0 0 12px #818cf8}
+  h1{font-size:clamp(26px,5.4vw,62px);font-weight:800;line-height:1.04;letter-spacing:-.02em}
+  h2{font-size:clamp(20px,3.6vw,40px);font-weight:800;line-height:1.1;letter-spacing:-.01em}
+  .grad{background:linear-gradient(90deg,#a5b4fc,#818cf8,#60a5fa);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{margin-top:16px;color:var(--mut);font-size:clamp(14px,2vw,21px);max-width:760px;font-weight:500}
+  .big{font-size:clamp(54px,12vw,150px);font-weight:900;letter-spacing:-.03em;line-height:.9}
+
+  /* Pile de cartes (scène hook) */
+  .pile{position:relative;width:230px;height:150px;margin-bottom:8px}
+  .pcard{position:absolute;width:170px;height:104px;border-radius:14px;left:30px;top:24px;
+    border:1px solid rgba(255,255,255,.12);background:#15162a;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+  .pcard:nth-child(1){transform:rotate(-12deg) translate(-26px,6px);background:#1b2440}
+  .pcard:nth-child(2){transform:rotate(-4deg) translate(-8px,-6px);background:#241b40}
+  .pcard:nth-child(3){transform:rotate(7deg) translate(20px,2px);background:#0f2436}
+  .pcard:nth-child(4){transform:rotate(15deg) translate(40px,12px);background:#2a1430}
+
+  /* Carte Wallet Le Pass 78 */
+  .wallet{width:min(58%,360px);aspect-ratio:1.586;border-radius:20px;padding:20px;color:#fff;position:relative;
+    background:linear-gradient(135deg,#6366f1,#4f46e5 55%,#1d4ed8);
+    box-shadow:0 30px 80px rgba(79,70,229,.5);border:1px solid rgba(255,255,255,.2);text-align:left;overflow:hidden}
+  .wallet .shine{position:absolute;top:-30%;left:-40%;width:35%;height:160%;background:rgba(255,255,255,.18);
+    filter:blur(8px);transform:rotate(10deg);animation:sweep 4s ease-in-out infinite}
+  @keyframes sweep{0%{left:-40%}60%,100%{left:130%}}
+  .wallet .lab{font-size:10px;letter-spacing:.18em;opacity:.8;font-weight:600}
+  .wallet .brand{font-size:clamp(16px,2.4vw,22px);font-weight:800;margin-top:2px}
+  .chip{width:42px;height:30px;border-radius:7px;margin-top:14px;background:linear-gradient(135deg,#fde68a,#f59e0b)}
+  .wallet .bottom{position:absolute;left:20px;right:20px;bottom:18px;display:flex;align-items:flex-end;justify-content:space-between}
+  .bal{font-size:clamp(22px,4vw,34px);font-weight:900;line-height:1}
+  .qr{width:62px;height:62px;border-radius:10px;background:#fff;padding:6px}
+  .qr svg{width:100%;height:100%;display:block}
+
+  /* Étapes */
+  .steps{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+  .step{width:200px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:22px 16px}
+  .step .ic{width:50px;height:50px;border-radius:14px;display:grid;place-items:center;margin:0 auto 12px;
+    background:linear-gradient(135deg,#6366f1,#2563eb);font-size:24px}
+  .step h3{font-size:17px;font-weight:700}
+  .step p{color:var(--mut);font-size:13px;margin-top:5px;font-weight:500}
+
+  /* Téléphone + notification (offres) */
+  .phone{width:230px;height:300px;border-radius:34px;border:8px solid #1b1b2b;background:#0b0b16;position:relative;overflow:hidden;
+    box-shadow:0 30px 70px rgba(0,0,0,.6)}
+  .phone .notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:90px;height:18px;border-radius:12px;background:#1b1b2b}
+  .phone .time{margin-top:42px;text-align:center;font-size:40px;font-weight:700;color:#fff}
+  .phone .date{text-align:center;color:#9aa0b4;font-size:12px;font-weight:500}
+  .toast{position:absolute;left:12px;right:12px;bottom:90px;background:rgba(30,30,48,.92);
+    border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:11px 13px;display:flex;gap:10px;align-items:flex-start;
+    transform:translateY(140px);opacity:0}
+  .scene.active .toast{animation:pop .7s cubic-bezier(.22,1,.36,1) .7s forwards}
+  @keyframes pop{to{transform:none;opacity:1}}
+  .toast .badge{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#6366f1,#2563eb);display:grid;place-items:center;font-size:18px;flex:none}
+  .toast .t1{font-size:12px;font-weight:700;color:#fff}
+  .toast .t2{font-size:12px;color:#c3c7d6;font-weight:500;line-height:1.3}
+  .toast .t0{font-size:10px;color:#9aa0b4;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+
+  /* Stats */
+  .stats{display:flex;gap:34px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+  .stat .n{font-size:clamp(34px,7vw,68px);font-weight:900;letter-spacing:-.02em}
+  .stat .l{color:var(--mut);font-size:14px;font-weight:600;margin-top:2px}
+
+  .cta{margin-top:22px;display:inline-flex;align-items:center;gap:10px;padding:14px 26px;border-radius:14px;
+    background:linear-gradient(90deg,#6366f1,#2563eb);color:#fff;font-weight:700;font-size:clamp(14px,2vw,18px);
+    box-shadow:0 18px 50px rgba(79,70,229,.55)}
+  .url{margin-top:14px;color:#aab0c6;font-size:clamp(12px,1.6vw,15px);font-weight:600}
+  .logo{display:inline-flex;align-items:center;gap:10px;font-weight:800;font-size:clamp(15px,2vw,20px)}
+  .logo .m{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#2563eb);display:grid;place-items:center;font-size:18px}
+
+  /* Progression + marque */
+  .bars{position:absolute;top:16px;left:18px;right:18px;display:flex;gap:6px;z-index:5}
+  .bar{flex:1;height:3px;border-radius:3px;background:rgba(255,255,255,.16);overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:#a5b4fc}
+  .bar.done i{width:100%}
+  .bar.run i{animation:fill linear forwards}
+  @keyframes fill{to{width:100%}}
+  .wm{position:absolute;bottom:14px;left:18px;display:flex;align-items:center;gap:8px;color:#aab0c6;font-weight:700;font-size:13px;z-index:5;opacity:.85}
+  .wm .m{width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,#6366f1,#2563eb);display:grid;place-items:center;font-size:12px}
+  .replay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(2,2,5,.55);z-index:6}
+  .replay button{padding:13px 24px;border-radius:12px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);
+    color:#fff;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit}
+  .hint{position:absolute;bottom:14px;right:18px;color:#6b7088;font-size:11px;z-index:5}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <div class="grid"></div>
+  <div class="halo a"></div><div class="halo b"></div><div class="halo c"></div>
+  <div class="bars" id="bars"></div>
+
+  <!-- 1. Hook -->
+  <section class="scene">
+    <div class="pile in d1">
+      <div class="pcard"></div><div class="pcard"></div><div class="pcard"></div><div class="pcard"></div>
+    </div>
+    <h1 class="in d2">Trop de cartes de fidélité ?</h1>
+    <p class="sub in d3">Une par commerce. Jamais la bonne au bon moment.</p>
+  </section>
+
+  <!-- 2. Reveal -->
+  <section class="scene">
+    <div class="kicker in d1"><span class="dot"></span> Le réseau de fidélité des Yvelines</div>
+    <h1 class="in d2">Une seule carte.<br><span class="grad">Tous vos commerçants du 78.</span></h1>
+    <div class="wallet in d3" style="margin-top:26px">
+      <div class="shine"></div>
+      <div class="lab">MONNAIE UNIVERSELLE</div>
+      <div class="brand">Le Pass 78</div>
+      <div class="chip"></div>
+      <div class="bottom">
+        <div><div class="lab">SOLDE</div><div class="bal">1 240 <span style="font-size:.5em">pts</span></div></div>
+        <div class="qr" id="qrslot"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Wallet natif -->
+  <section class="scene">
+    <h2 class="in d1">Native dans <span class="grad">Apple & Google Wallet</span></h2>
+    <p class="sub in d2">Zéro application à télécharger. Elle vit dans le téléphone de vos clients.</p>
+    <div class="in d3" style="margin-top:22px;display:flex;gap:14px;flex-wrap:wrap;justify-content:center;color:#c7cbff;font-weight:600">
+      <span style="padding:8px 16px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.05)">Sans contact</span>
+      <span style="padding:8px 16px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.05)">Sans contrat</span>
+      <span style="padding:8px 16px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.05)">Toujours à jour</span>
+    </div>
+  </section>
+
+  <!-- 4. 3 étapes -->
+  <section class="scene">
+    <div class="kicker in d1"><span class="dot"></span> Côté client</div>
+    <h2 class="in d2">Simple comme bonjour</h2>
+    <div class="steps">
+      <div class="step in d2"><div class="ic">＋</div><h3>1. Ajoutez au Wallet</h3><p>En un clic, sans app.</p></div>
+      <div class="step in d3"><div class="ic">▣</div><h3>2. Scannez en caisse</h3><p>Présentez votre QR code.</p></div>
+      <div class="step in d4"><div class="ic">★</div><h3>3. Dépensez partout</h3><p>Chez tous les partenaires.</p></div>
+    </div>
+  </section>
+
+  <!-- 5. Monnaie universelle -->
+  <section class="scene">
+    <h2 class="in d1">La <span class="grad">monnaie universelle</span></h2>
+    <p class="sub in d2">Gagnez des points chez votre coiffeur…<br>offrez-vous un resto avec.</p>
+    <div class="in d3" style="margin-top:24px;display:flex;align-items:center;gap:18px;color:#fff;font-weight:700;font-size:clamp(15px,2.4vw,22px)">
+      <span>✂️ Coiffeur</span>
+      <span class="grad" style="font-size:1.6em">→</span>
+      <span style="padding:8px 14px;border-radius:12px;background:rgba(129,140,248,.18);border:1px solid rgba(129,140,248,.4)">+50 pts</span>
+      <span class="grad" style="font-size:1.6em">→</span>
+      <span>🍽️ Restaurant</span>
+    </div>
+  </section>
+
+  <!-- 6. Commerçant -->
+  <section class="scene">
+    <div class="kicker in d1"><span class="dot"></span> Côté commerçant</div>
+    <h2 class="in d2">Rejoignez le réseau. <span style="color:#8b90a8">Sans contrainte.</span></h2>
+    <div class="steps">
+      <div class="step in d2"><div class="ic">📱</div><h3>Zéro matériel</h3><p>Un simple téléphone ou tablette.</p></div>
+      <div class="step in d3"><div class="ic">📊</div><h3>Stats en temps réel</h3><p>Suivez votre activité du jour.</p></div>
+      <div class="step in d4"><div class="ic">👥</div><h3>Nouveaux clients</h3><p>La force du réseau mutualisé.</p></div>
+    </div>
+  </section>
+
+  <!-- 7. Offres Wallet (feature clé) -->
+  <section class="scene">
+    <div style="display:flex;align-items:center;gap:40px;flex-wrap:wrap;justify-content:center">
+      <div style="max-width:380px;text-align:left">
+        <div class="kicker in d1"><span class="dot"></span> Nouveau</div>
+        <h2 class="in d2">Vos offres,<br><span class="grad">directement sur leur téléphone.</span></h2>
+        <p class="sub in d3" style="text-align:left">Diffusez une promo en un clic : elle s'affiche sur la carte Wallet du client, avec une notification.</p>
+      </div>
+      <div class="phone in d3">
+        <div class="notch"></div>
+        <div class="time">20:47</div>
+        <div class="date">jeudi 12 juin</div>
+        <div class="toast">
+          <div class="badge">🎁</div>
+          <div>
+            <div class="t0">Le Pass 78 · Wallet</div>
+            <div class="t1">Le Coin Gourmand</div>
+            <div class="t2">-20% sur les menus du midi cette semaine !</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. Stats réseau -->
+  <section class="scene">
+    <h2 class="in d1">Tout le 78, <span class="grad">un seul réseau.</span></h2>
+    <div class="stats" style="margin-top:26px">
+      <div class="stat in d2"><div class="n grad" data-to="120" data-suf="+">0</div><div class="l">Commerçants visés</div></div>
+      <div class="stat in d3"><div class="n grad" data-to="15000" data-suf="+">0</div><div class="l">Membres attendus</div></div>
+      <div class="stat in d4"><div class="n grad" data-to="100" data-suf="%">0</div><div class="l">Sans contact</div></div>
+    </div>
+  </section>
+
+  <!-- 9. CTA -->
+  <section class="scene">
+    <div class="logo in d1"><span class="m">▦</span> Le Pass 78</div>
+    <h1 class="in d2" style="margin-top:14px">Dynamisez le<br><span class="grad">commerce local.</span></h1>
+    <div class="cta in d3">Rejoindre la liste d'attente →</div>
+    <div class="url in d4">thebroly78.github.io/le-pass-78-site</div>
+  </section>
+
+  <div class="wm"><span class="m">▦</span> Le Pass 78</div>
+  <div class="hint">cliquez pour mettre en pause</div>
+  <div class="replay" id="replay"><button id="replayBtn">↻ Revoir la démo</button></div>
+</div>
+
+<script>
+(function(){
+  var scenes=[].slice.call(document.querySelectorAll('.scene'));
+  var dur=[3200,4600,3800,4200,4200,4400,5200,4200,5200];
+  var bars=document.getElementById('bars');
+  var barEls=scenes.map(function(_,i){var b=document.createElement('div');b.className='bar';b.innerHTML='<i></i>';bars.appendChild(b);return b;});
+  var i=0,timer=null,paused=false,start=0,remain=0;
+
+  function qr(){
+    var N=11,r='';
+    function fin(x,y){return '<g transform="translate('+x+' '+y+')"><rect width="25" height="25" rx="5" fill="#0a0a12"/><rect x="5" y="5" width="15" height="15" rx="3" fill="#fff"/><rect x="9" y="9" width="7" height="7" rx="2" fill="#0a0a12"/></g>';}
+    for(var a=0;a<N;a++)for(var b=0;b<N;b++){
+      if((a<3&&b<3)||(a<3&&b>=N-3)||(a>=N-3&&b<3))continue;
+      if((a*13+b*7+((a^b)%3))%3===0)r+='<rect x="'+(b*9+1)+'" y="'+(a*9+1)+'" width="7" height="7" rx="1.5" fill="#0a0a12"/>';
+    }
+    document.getElementById('qrslot').innerHTML='<svg viewBox="0 0 99 99">'+r+fin(0,0)+fin(74,0)+fin(0,74)+'</svg>';
+  }
+  qr();
+
+  function counters(sc){
+    sc.querySelectorAll('.n[data-to]').forEach(function(el){
+      var to=+el.getAttribute('data-to'),suf=el.getAttribute('data-suf')||'',t0=null;
+      function step(ts){if(!t0)t0=ts;var p=Math.min((ts-t0)/1500,1);var v=Math.round(to*(1-Math.pow(1-p,3)));
+        el.textContent=v.toLocaleString('fr-FR')+suf;if(p<1)requestAnimationFrame(step);}
+      requestAnimationFrame(step);
+    });
+  }
+
+  function show(n){
+    scenes.forEach(function(s){s.classList.remove('active')});
+    barEls.forEach(function(b,k){b.classList.remove('run','done');b.querySelector('i').style.animation='none';
+      if(k<n)b.classList.add('done');});
+    var sc=scenes[n];sc.classList.add('active');
+    var bi=barEls[n].querySelector('i');bi.style.animation='none';void bi.offsetWidth;
+    bi.style.animationName='fill';bi.style.animationDuration=dur[n]+'ms';barEls[n].classList.add('run');
+    if(sc.querySelector('.n[data-to]'))counters(sc);
+    remain=dur[n];start=Date.now();
+    clearTimeout(timer);timer=setTimeout(next,dur[n]);
+  }
+  function next(){if(i<scenes.length-1){i++;show(i);}else{ended();}}
+  function ended(){document.getElementById('replay').style.display='flex';
+    barEls.forEach(function(b){b.classList.add('done')});}
+
+  var stage=document.getElementById('stage');
+  stage.addEventListener('click',function(e){
+    if(e.target.closest('#replayBtn'))return;
+    if(document.getElementById('replay').style.display==='flex')return;
+    paused=!paused;
+    var bi=barEls[i].querySelector('i');
+    if(paused){clearTimeout(timer);remain-=(Date.now()-start);bi.style.animationPlayState='paused';}
+    else{start=Date.now();bi.style.animationPlayState='running';timer=setTimeout(next,Math.max(remain,200));}
+  });
+  document.getElementById('replayBtn').addEventListener('click',function(){
+    document.getElementById('replay').style.display='none';i=0;paused=false;show(0);
+  });
+  show(0);
+})();
+</script>
+</body>
+</html>
