@@ -7,11 +7,14 @@ import {
   CreditCard, Wallet, ScanLine, Coins, ArrowRight, Sparkles,
   MonitorSmartphone, Users, BarChart3, Check, ShieldCheck, MapPin, Zap,
   Menu, X, Plus, Quote, Scissors, UtensilsCrossed, Coffee, ShoppingBag,
-  Croissant, Flower2, Dumbbell, Store, Loader2, AlertCircle,
+  Croissant, Flower2, Dumbbell, Store, Loader2, AlertCircle, Play,
 } from 'lucide-react';
 
 // URL de l'API backend (configurable via VITE_API_URL — voir .env.example).
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+// Spot de démonstration (servi à la racine du site).
+const DEMO_URL = import.meta.env.BASE_URL + 'demo.html';
 
 /* -------------------------------------------------------------------------- */
 /*  Variantes & helpers d'animation                                           */
@@ -387,6 +390,17 @@ function Hero() {
             >
               Rejoindre la liste d'attente
               <ArrowRight size={18} className="transition group-hover:translate-x-1" />
+            </a>
+            <a
+              href={DEMO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-6 py-3.5 font-semibold text-white backdrop-blur transition hover:bg-white/10"
+            >
+              <span className="grid h-6 w-6 place-items-center rounded-full bg-white/15 transition group-hover:bg-white/25">
+                <Play size={13} className="ml-0.5 fill-white" />
+              </span>
+              Voir la démo
             </a>
             <a
               href="#merchants"
