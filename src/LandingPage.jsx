@@ -9,12 +9,11 @@ import {
   Menu, X, Plus, Quote, Scissors, UtensilsCrossed, Coffee, ShoppingBag,
   Croissant, Flower2, Dumbbell, Store, Loader2, AlertCircle, Play,
 } from 'lucide-react';
+// Spot de démo intégré au bundle (joué dans une modale — pas exposé comme page/URL).
+import demoSpot from './demoSpot.html?raw';
 
 // URL de l'API backend (configurable via VITE_API_URL — voir .env.example).
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
-// Spot de démonstration (servi à la racine du site).
-const DEMO_URL = import.meta.env.BASE_URL + 'demo.html';
 
 /* -------------------------------------------------------------------------- */
 /*  Variantes & helpers d'animation                                           */
@@ -332,7 +331,7 @@ function WalletCard() {
 /* -------------------------------------------------------------------------- */
 /*  1. HERO                                                                   */
 /* -------------------------------------------------------------------------- */
-function Hero() {
+function Hero({ onDemo }) {
   return (
     <section id="top" className="relative mx-auto max-w-6xl px-6 pt-40 pb-20 md:pt-48">
       <div className="grid items-center gap-14 lg:grid-cols-2">
@@ -391,17 +390,16 @@ function Hero() {
               Rejoindre la liste d'attente
               <ArrowRight size={18} className="transition group-hover:translate-x-1" />
             </a>
-            <a
-              href={DEMO_URL}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
+              onClick={onDemo}
               className="group inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-6 py-3.5 font-semibold text-white backdrop-blur transition hover:bg-white/10"
             >
               <span className="grid h-6 w-6 place-items-center rounded-full bg-white/15 transition group-hover:bg-white/25">
                 <Play size={13} className="ml-0.5 fill-white" />
               </span>
               Voir la démo
-            </a>
+            </button>
             <a
               href="#merchants"
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-6 py-3.5 font-semibold text-white backdrop-blur transition hover:bg-white/10"
@@ -877,14 +875,51 @@ function Footer() {
 /* -------------------------------------------------------------------------- */
 /*  Page                                                                      */
 /* -------------------------------------------------------------------------- */
+// Modale qui joue le spot intégré (iframe srcDoc) — l'URL de la page ne change pas,
+// et aucun fichier demo.html n'est exposé.
+function DemoModal({ onClose }) {
+  useEffect(() => {
+    const h = (e) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', h);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', h);
+      document.body.style.overflow = '';
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-3 sm:p-6 animate-fade-in"
+      onClick={onClose}
+    >
+      <button
+        onClick={onClose}
+        aria-label="Fermer la démo"
+        className="absolute right-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full border border-white/15 bg-white/10 text-white transition hover:bg-white/20"
+      >
+        <X size={20} />
+      </button>
+      <div className="w-full max-w-5xl" onClick={(e) => e.stopPropagation()}>
+        <iframe
+          srcDoc={demoSpot}
+          title="Démo Le Pass 78"
+          className="aspect-video w-full rounded-2xl border border-white/10 bg-black"
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function LandingPage() {
+  const [showDemo, setShowDemo] = useState(false);
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-ink-950 text-gray-200">
       <BackgroundFX />
       <ScrollProgress />
       <Navbar />
       <main>
-        <Hero />
+        <Hero onDemo={() => setShowDemo(true)} />
         <PartnersMarquee />
         <HowItWorks />
         <StatsBand />
@@ -894,6 +929,7 @@ export default function LandingPage() {
         <FinalCTA />
       </main>
       <Footer />
+      {showDemo && <DemoModal onClose={() => setShowDemo(false)} />}
     </div>
   );
 }
